@@ -128,7 +128,7 @@ setup_shell_profile() {
 
 main() {
     echo ""
-    echo -e "${GREEN}  Vex Language Installer${NC}"
+    echo -e "${GREEN}  Vex Toolchain Installer${NC}"
     echo ""
 
     local os arch version
@@ -179,85 +179,80 @@ main() {
         fatal "Failed to find extracted directory"
     fi
 
-    # Install binary
-    local bin_dir="${VEX_INSTALL}/bin"
-    local lib_dir="${VEX_INSTALL}/lib/vex"
+    # Setup VEX_HOME (~/.vex) — everything goes here
+    info "Setting up VEX_HOME at ${VEX_HOME}..."
+    mkdir -p "${VEX_HOME}/bin" "${VEX_HOME}/lib/std" "${VEX_HOME}/lib/runtime" "${VEX_HOME}/deps" "${VEX_HOME}/cache"
 
-    if [ -w "$bin_dir" ] 2>/dev/null; then
-        SUDO=""
-    else
-        SUDO="sudo"
-        info "Root access required to install to ${VEX_INSTALL}"
-    fi
+    # Install all tool binaries into VEX_HOME/bin
+    local installed_tools=""
+    for bin in vex vex-lsp vex-formatter vex-doc vex-pm; do
+        if [ -f "${pkg_dir}/bin/${bin}" ]; then
+            cp "${pkg_dir}/bin/${bin}" "${VEX_HOME}/bin/${bin}"
+            chmod +x "${VEX_HOME}/bin/${bin}"
+            installed_tools="${installed_tools} ${bin}"
+        fi
+    done
+    ok "Tools installed:${installed_tools}"
 
-    $SUDO mkdir -p "$bin_dir"
-    $SUDO cp "${pkg_dir}/bin/vex" "${bin_dir}/vex"
-    $SUDO chmod +x "${bin_dir}/vex"
-    ok "Binary installed to ${bin_dir}/vex"
-
-    # Install stdlib and runtime
-    $SUDO mkdir -p "$lib_dir"
+    # Install stdlib
     if [ -d "${pkg_dir}/lib/std" ]; then
-        $SUDO rm -rf "${lib_dir}/std"
-        $SUDO cp -r "${pkg_dir}/lib/std" "${lib_dir}/std"
-        ok "Standard library installed to ${lib_dir}/std"
-    fi
-    if [ -d "${pkg_dir}/lib/runtime" ]; then
-        $SUDO rm -rf "${lib_dir}/runtime"
-        $SUDO cp -r "${pkg_dir}/lib/runtime" "${lib_dir}/runtime"
-        ok "Runtime installed to ${lib_dir}/runtime"
+        rm -rf "${VEX_HOME}/lib/std"
+        cp -r "${pkg_dir}/lib/std" "${VEX_HOME}/lib/std"
+        ok "Standard library → ${VEX_HOME}/lib/std"
     fi
 
-    # Verify installation
+    # Install runtime
+    if [ -d "${pkg_dir}/lib/runtime" ]; then
+        rm -rf "${VEX_HOME}/lib/runtime"
+        cp -r "${pkg_dir}/lib/runtime" "${VEX_HOME}/lib/runtime"
+        ok "Runtime → ${VEX_HOME}/lib/runtime"
+    fi
+
+    # Symlink main binary to /usr/local/bin for convenience (if writable)
+    local system_bin="${VEX_INSTALL}/bin"
+    if [ -w "$system_bin" ] 2>/dev/null; then
+        ln -sf "${VEX_HOME}/bin/vex" "${system_bin}/vex"
+        ok "Symlinked vex → ${system_bin}/vex"
+    elif command -v sudo &>/dev/null; then
+        sudo ln -sf "${VEX_HOME}/bin/vex" "${system_bin}/vex" 2>/dev/null && \
+            ok "Symlinked vex → ${system_bin}/vex" || true
+    fi
+
+    # Write config
+    cat > "${VEX_HOME}/config.json" << VEXCFG
+{
+  "version": "${version}",
+  "vex_home": "${VEX_HOME}",
+  "std_path": "${VEX_HOME}/lib/std",
+  "runtime_path": "${VEX_HOME}/lib/runtime",
+  "tools": [$(echo "$installed_tools" | sed 's/ /", "/g; s/^", "//; s/^/"/; s/$/"/' )]
+}
+VEXCFG
+    ok "Config → ${VEX_HOME}/config.json"
+
+    # Add VEX_HOME/bin to shell profile
+    setup_shell_profile "${VEX_HOME}/bin"
+
+    # Verify
     echo ""
-    if "${bin_dir}/vex" --version 2>/dev/null; then
+    if "${VEX_HOME}/bin/vex" --version 2>/dev/null; then
         ok "Vex ${version} installed successfully!"
     else
         ok "Vex ${version} files installed."
     fi
 
-    # Check PATH
-    case ":$PATH:" in
-        *":${bin_dir}:"*) ;;
-        *)
-            echo ""
-            warn "${bin_dir} is not in your PATH."
-            echo "  Add to your shell profile:"
-            echo "    export PATH=\"${bin_dir}:\$PATH\""
-            ;;
-    esac
-
-    # Setup VEX_HOME (~/.vex)
-    info "Setting up VEX_HOME at ${VEX_HOME}..."
-    mkdir -p "${VEX_HOME}/std" "${VEX_HOME}/deps" "${VEX_HOME}/bin" "${VEX_HOME}/cache"
-
-    # Symlink stdlib into VEX_HOME
-    if [ -d "${lib_dir}/std" ]; then
-        rm -rf "${VEX_HOME}/std"
-        ln -sf "${lib_dir}/std" "${VEX_HOME}/std"
-        ok "Standard library linked to ${VEX_HOME}/std"
-    fi
-
-    # Write VEX_HOME config
-    cat > "${VEX_HOME}/config.json" << VEXCFG
-{
-  "version": "${version}",
-  "install_dir": "${VEX_INSTALL}",
-  "std_path": "${lib_dir}/std",
-  "runtime_path": "${lib_dir}/runtime"
-}
-VEXCFG
-    ok "Config written to ${VEX_HOME}/config.json"
-
-    # Add to shell profile if not already there
-    setup_shell_profile "${bin_dir}"
-
+    echo ""
+    echo -e "${GREEN}  Installed to: ${VEX_HOME}${NC}"
+    echo ""
+    echo -e "  ${CYAN}bin/${NC}          vex, vex-lsp, vex-formatter, vex-doc"
+    echo -e "  ${CYAN}lib/std/${NC}      Standard library"
+    echo -e "  ${CYAN}lib/runtime/${NC}  Runtime libraries"
+    echo -e "  ${CYAN}deps/${NC}         Package dependencies"
+    echo -e "  ${CYAN}cache/${NC}        Build cache"
     echo ""
     echo -e "${GREEN}  Get started:${NC}"
     echo "    vex run hello.vx"
     echo ""
 }
-
-main "$@"
 
 main "$@"
