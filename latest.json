@@ -1,0 +1,15 @@
+{
+  "version": "v0.1.0",
+  "notes": "Release vv0.1.0",
+  "pub_date": "2026-06-26T11:11:11.319Z",
+  "platforms": {
+    "linux-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSU2YyZE5Wai9saTZSZjdlRGFwZ3FMRW80dXhtcEJIMFJoVDdFR3hac0kvMzJCa2ZHOGpSMHhsbEN3ZVhsQUFEMDBlRmFZMjFsMlVPajUxa3pRNFE5Z3RMcklaQzJXOGdjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyNDY2NjY0CWZpbGU6dmV4LWhkbCBTdHVkaW9fMC4xLjBfYW1kNjQuZGViCnRlTi8wc0c3eUFnbkZwd2Ewc0dXeVg3Rk5DbmxDdVk0ZGViS0NCdmVRaTY2THpzVnVEa2hzL2R3eFZVTXBUbkZEbE84UUJNeWV6Rk9NSDZSQm9kMUNBPT0K",
+      "url": "https://github.com/vex-org/releases/releases/download/vv0.1.0/vex-hdl Studio_0.1.0_amd64.deb"
+    },
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSU2YyZE5Wai9saXg4ZDlzUEU2ZExodXh6Yk1DM1g4SElQbzdjVFI5RFZybWh4a1BET3I2aDNFVjVTV2VLaDJQU0FWZTl1MXlnWVZNd0VDRTFQblY4ejE2ZW9US0x1ZWdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyNDY3NTM1CWZpbGU6dmV4LWhkbCBTdHVkaW9fMC4xLjBfeDY0LXNldHVwLmV4ZQpEUmprS3NSdDFmV3Fxck9qdEtpZTFvY0dLK0xjcC9QUHBsQ3NEMlk3UUJIZytlUWZlUUE4T2JjV3dvcC9BWHYrcS8rSDFyMXlqWW01QUpZcGtwZDBBZz09Cg==",
+      "url": "https://github.com/vex-org/releases/releases/download/vv0.1.0/vex-hdl Studio_0.1.0_x64-setup.exe"
+    }
+  }
+}
